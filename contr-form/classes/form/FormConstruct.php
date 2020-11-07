@@ -17,13 +17,6 @@ class FormConstruct
 
     private function __construct(array $array, string $nameForm, $messageID = 0)
     {
-//        echo 'Массив на входе';
-//        echo '<pre>';
-//        print_r($messageID);
-//        echo '</pre>';
-
-
-
         $this->idForm = $nameForm;
         $this->messageID = $messageID;
 
@@ -41,10 +34,8 @@ class FormConstruct
 
         if (key_exists('downLoadForm', $_GET ) && $_GET['downLoadForm'] == $this->idForm) {
 
-            //print_r($_GET['downLoadForm']);
             $this->downLoadForm();
         }
-
 
         $this->sendLetter();
     }
@@ -72,9 +63,6 @@ class FormConstruct
 
         $dataBase = \classes\db\ConnectionDB::getInstance();
         $arrayForm = $dataBase->getResult($query);
-//        echo '<pre>';
-//        print_r($arrayForm);
-//        echo '</pre>';
         return new self($arrayForm,  $arrayForm[0]['FormID'], $arrayForm[0]['MessageID']);
     }
 
@@ -99,10 +87,6 @@ class FormConstruct
 
     public function sendLetter()
     {
-        echo '<pre>';
-        print_r($this);
-        echo '</pre>';
-
         $total = $this->controlForm();
 
         $msg = '';
@@ -112,10 +96,35 @@ class FormConstruct
                 $msg .= $object->sendField();
             }
 
-
             $this->writeFile($msg);
 
-            $this->writeMessageToDB($msg);
+            if ($this->messageID) {
+//                echo '<pre>';
+//                print_r($this);
+//                echo '<br>';
+                $this->updateMessageToDB();
+                //die;
+            } else {
+                $this->writeMessageToDB($msg);
+            }
+       }
+    }
+
+    public function updateMessageToDB()
+    {
+        $dataBase = \classes\db\ConnectionDB::getInstance();
+
+        foreach ($this->form as $object) {
+            $query = '
+                UPDATE fields_message
+                SET Value = \'' . serialize($object->value) . '\'
+                WHERE MessageID = ' . $this->messageID . ' and FieldID = ' . $object->ID_field;
+
+//            echo '<pre>';
+//            print_r($query);
+//            echo '<br>';
+            $res = $dataBase->sendQuery($query);
+
         }
     }
 

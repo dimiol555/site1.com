@@ -13,12 +13,12 @@ class ConnectionDB
     private function __construct()
     {
         $this->link = mysqli_connect(HOST, USER, PASSWORD, DATABASE)
-                    or die("Ошибка " . mysqli_error($this->link));
+        or die("Ошибка " . mysqli_error($this->link));
     }
 
     public static function getInstance()
     {
-        if(!self::$instance) {
+        if (!self::$instance) {
             self::$instance = new self();
         }
         return self::$instance;
